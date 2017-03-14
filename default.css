@@ -1,0 +1,64 @@
+body {
+    margin: 0;
+    width: 100%; 
+    height: 100%;
+}
+.transparent{
+    background-color: transparent;
+}
+
+/*selection mode for folder tree*/
+.sMode .webix_tree_item.webix_selected{
+    background: #ffdb8f;
+}
+.sMode .webix_tree_item.webix_selected span{
+    background: transparent !important;
+}
+.sMode .webix_tree_img{
+    background-color: transparent;
+}
+.bt_1 input{
+    background: #396D9E;
+    background: -moz-linear-gradient(top, #5D91C3 0% , #396D9E 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0,#5D91C3), color-stop(1, #396D9E));
+    border:1px solid #396D9E;
+    text-shadow: 0 -1px #134471;
+    box-shadow: inset 0px 1px 1px #8eb3d5;
+    -webkit-box-shadow: inset 0px 1px 1px #8eb3d5;
+    color:#FFFFFF;
+    font-size: 15px;
+}
+.bt_1 input:active{
+    background: #396D9E;
+}
+
+.icon_btn .webix_icon{
+    font-size: 24px;
+    color: #555;
+}
+.icon_btn .text{
+    color: #555;
+}
+.icon_btn .webix_icon{
+		    font-size: 24px;
+		    color: #555;
+	    }
+
+/* user define style */            
+.overall{ height:100%; line-height: 26px;}
+.name{ height:100%; float:left; overflow: hidden;}
+.size{	padding: 0 10px; width: 100px; text-align: right; float: right;}
+.remove_file{ float:right; width:15px; padding-left: 10px;}
+.status{
+        float: right;
+        position: relative;
+        margin-top: 4px;
+        width: 80px;
+        height: 16px;
+        line-height: 16px;
+        border: 1px solid #A4BED4;
+        border-radius: 2px; -moz-border-radius: 2px; -webkit-border-radius: 2px;
+}
+.progress{ height: 100%; position: absolute; background-color: #b8e6ff;}
+.message{ z-index: 1; width:100%; text-align:center; position: absolute;}
+.message.error{ color: #e83b3b;}
