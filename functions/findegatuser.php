@@ -8,5 +8,4 @@ if ($result != 'null') {
     $result = utf8_decode($result);
     list($name,$email) = split(':',$result);
     echo '[{"name":"'.$name.'","email":"'.$email.'"}]';
-    logging('Adduser-'.$name);
 }

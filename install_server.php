@@ -6,7 +6,7 @@ $config = "[database]\n";
 $config .= "data_type=\"MySQL\"\n";
 $config .= "host=\"".$_POST['dbhost']."\"\n";
 $config .= "user=\"".$_POST['dbusername']."\"\n";
-$config .= "host=\"".$_POST['dbpassword']."\"\n";
+$config .= "password=\"".$_POST['dbpassword']."\"\n";
 $config .= "default_database=\"".$_POST['dbname']."\"\n\n";
 $config .= "[var]\n";
 $config .= "loginegat=\"true\"\n";

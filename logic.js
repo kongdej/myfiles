@@ -82,6 +82,8 @@ function fullscreen() {
         $$('download_button').hide();
         $$('properties_button').hide();
         $$('mail_button').hide();
+        $$('fullscreen_button').define("align","center");
+        $$('fullscreen_button').define("icon","close");
         $$('fullscreen_button').define("label","Close");
         $$('fullscreen_button').refresh();        
         toggle = 1;
@@ -687,6 +689,7 @@ var logic = {
                 $$("btnDocadminadd").show();
                 $$("btnSetting").show();
                 $$("btnLogging").show();
+                $$("listdoc").showColumn("infodoc");
                 break;
             case 'docadmin' :
                 $$('toolbar_folder').hide();
@@ -694,6 +697,7 @@ var logic = {
                 $$("content_main").collapse();
                 $$("folder_main").expand();
                 $$("btnDocadminadd").show();
+                $$("listdoc").showColumn("infodoc");
                 
                 break;
             default:

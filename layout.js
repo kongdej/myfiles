@@ -174,7 +174,7 @@ var grid = {
                 resizeColumn: true,
                 autoconfig: true,
                 columns: [
-                    {id:"info", header:"Info", width:25, template:"<span class='webix_icon fa-info' onmouseover='showDetails(\"#id#\");'></span>"},
+                    {id:"infodoc", header:"Info", width:25, template:"<span class='webix_icon fa-info' onmouseover='showDetails(\"#id#\");'></span>", hidden:true},
                     {id: "id", header: "id", 
                         format:function(value){ 
                             var pad = "00000";
@@ -249,16 +249,13 @@ var content = {
                 view: "toolbar",
                 scroll: false,
                 elements: [
-// for popup see --> logic.js init() view popup
-//                    {id: "fullscreen_button", view: "toggle", click: ("fullscreen();"), label: "Full Screen", width: 90, disabled: true, hidden:false},
-                    
                     {id: "edit_button", width: 60, view: "button", type:'icon', icon: 'edit', label: "Edit", click: "editDocument()", disabled: true, hidden:true},
                     {id: "delete_button", width: 70, view: "button", type:'icon', icon: 'trash', label: "Delete", click: "deletedata()", disabled: true, hidden:true},
                     {id: "properties_button", width: 100, view: "button", type:'icon', icon: 'info', label: "Properties", click: "showProperties()", disabled: true, hidden:false},
                     {id: "download_button", width: 100, view: "button", type:'icon', icon: 'download', label: "Download", click: "download()", disabled: true, hidden:false},
                     {id: "mail_button", width: 60, view: "button", type:'icon', icon: 'envelope-o', label: "Mail", click: "mail()", disabled: true, hidden:false},
                     {id: "fullscreen_button", width: 100, view: "button", type:'icon', icon: 'expand', label: "Full Screen", click: "fullscreen();", disabled: true, hidden:false},
-                    {}
+
 //                    {},
 //                    {id: "back_button", view: "button", type: "prev", click: ("moveBack();"), label: "Back", width: 50, disabled: true , hidden:false},
 //                    {id: "next_button", view: "button", type: "next", click: ("moveNext();"), label: "Next", width: 50, disabled: true , hidden:false}
@@ -648,23 +645,28 @@ var griduser = {
                 });                
             });   
         },
-*/        
+        
+        onBeforeDataSend : function (data,row) {
+            webix.message(data.value);
+        },
+      
+ */     
         onBeforeEditStop : function (data,row){
             if (row.column == 'username' && data.value != data.old) {
                 // check duplicate user
 //                console.log('..check dup');
                 webix.ajax("index.php?m=finddupuser&username="+data.value, function(text,res){
-                    console.log('..'+text);
+//                    console.log('..'+text);
                     if (text=='1') {
-                        webix.message({type:'error',text:'Duplicate username'});
+                        webix.message({type:'error',text:'Duplicated user!'});
                         $$('usertable').load('index.php?m=user');
                         $$('usertable').refresh();
                     }
                     else {
 //                        console.log('..find egat userinfo');
-                         webix.ajax("data/findegatuser.php?id="+data.value, function(text,res){
+                         webix.ajax("functions/findegatuser.php?id="+data.value, function(text,res){
                             if (text) {
-                                webix.message(res.json()[0].name);               
+                                //webix.message(res.json()[0].name);               
                                  var record = $$('usertable').getItem(row.row);
                                  record['email']= res.json()[0].email;
                                  record['name']= res.json()[0].name;
@@ -676,6 +678,7 @@ var griduser = {
                 });
             }
         }
+        
     }
 };
 
@@ -708,12 +711,13 @@ var buttons = {
                     row:0,
                     column:'name'
                 });
- */
+ 
                 webix.message( {
                     type : "error",
                     text: "Dbclick to edit user."
                     }
                 );
+ */
             }},
         {view: "button", width: 100, value: "Delete User", click: function () {
                 var id = $$('usertable').getSelectedId();
