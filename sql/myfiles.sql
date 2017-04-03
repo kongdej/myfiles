@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` varchar(100) DEFAULT NULL,
   `password` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
-  `position` varchar(50) DEFAULT 'user',
+  `position` varchar(50) DEFAULT 'User',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `Index 2` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8;

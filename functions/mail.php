@@ -43,7 +43,7 @@ $mail->addAttachment($attachfile);         // Add attachments
 $mail->isHTML(true);                       // Set email format to HTML
 
 $mail->Subject = $subject;
-$mail->Body    = '<b>Document: '.$subject."<br>";
+$mail->Body    = '<b>Document: '.getDocumentName($id)."<br>";
 $mail->Body   .= "Message from: ".$username ."&lt;".$from."&gt;<br><br></b>";
 $mail->Body   .= $message;
 $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';

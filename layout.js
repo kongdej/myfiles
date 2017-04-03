@@ -159,7 +159,7 @@ function showDetails(id) {
 // list grid document of selected folder
 var grid = {
     id: 'grid_main',
-    header: "<span class='webix_icon fa-clock-o'></span>Recent",
+    header: "Documents",
     gravity: 3,
 //    template:"left",
 //    resizeColumn:true,
@@ -233,7 +233,7 @@ var grid = {
 // show content and footer menu
 var content = {
     id: "content_main",
-    header: "Document",
+    header: "Content",
     gravity: 5,
     template:"right", 
    //hidden: true,
@@ -645,12 +645,7 @@ var griduser = {
                 });                
             });   
         },
-        
-        onBeforeDataSend : function (data,row) {
-            webix.message(data.value);
-        },
-      
- */     
+*/        
         onBeforeEditStop : function (data,row){
             if (row.column == 'username' && data.value != data.old) {
                 // check duplicate user
@@ -658,7 +653,7 @@ var griduser = {
                 webix.ajax("index.php?m=finddupuser&username="+data.value, function(text,res){
 //                    console.log('..'+text);
                     if (text=='1') {
-                        webix.message({type:'error',text:'Duplicated user!'});
+                        webix.message({type:'error',text:'Duplicate username'});
                         $$('usertable').load('index.php?m=user');
                         $$('usertable').refresh();
                     }
@@ -666,7 +661,7 @@ var griduser = {
 //                        console.log('..find egat userinfo');
                          webix.ajax("functions/findegatuser.php?id="+data.value, function(text,res){
                             if (text) {
-                                //webix.message(res.json()[0].name);               
+                                webix.message(res.json()[0].name);               
                                  var record = $$('usertable').getItem(row.row);
                                  record['email']= res.json()[0].email;
                                  record['name']= res.json()[0].name;
@@ -678,7 +673,6 @@ var griduser = {
                 });
             }
         }
-        
     }
 };
 
@@ -711,13 +705,12 @@ var buttons = {
                     row:0,
                     column:'name'
                 });
- 
+ */
                 webix.message( {
                     type : "error",
                     text: "Dbclick to edit user."
                     }
                 );
- */
             }},
         {view: "button", width: 100, value: "Delete User", click: function () {
                 var id = $$('usertable').getSelectedId();

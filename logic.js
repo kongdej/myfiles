@@ -753,10 +753,13 @@ var logic = {
             webix.ajax("index.php?m=getdoc&id=" + docid, function (text) {
                 var d = JSON.parse(text);
                 //var path = docpath + d.filepath;
-//                console.log(d.filetype);
+                console.log(d.filetype);
                 if (d.filetype == 'application/pdf' || d.filetype == "application/octet-stream") {
                     path = 'pdfjs/web/viewer.html?file=../../' + d.filepath+'&r='+Math.random();
                 }
+//                if (d.filetype == 'video/mp4') {
+//                    path = 'index.php?m=vjs&f='+d.filepath+'&r='+Math.random();
+//                }
                 else if (d.filetype.indexOf('html')!= -1) {
                     path = d.filepath;
                 }

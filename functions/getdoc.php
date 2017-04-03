@@ -11,9 +11,10 @@ $datedir = $y.$m;
 list($_,$site) = split('_',$_SESSION['database']);
 $path =  'sites/'.$site.'/documents/'.$datedir;
 
-$listfiles = $path.'/'.$id.'*';
+$listfiles = $path.'/'.$id.'.*';
 //echo $listfiles;
 $files = glob($listfiles);
+//print_r($files);
 
 if (!count($files)) {
     $filepath = $config['var']['missing_file'];
