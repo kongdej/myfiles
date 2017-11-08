@@ -1,14 +1,15 @@
 <?php
 session_start();
 
-//$config = parse_ini_file("config.ini", true);
 if (file_exists("config.php")) {
     $config = parse_ini_file("config.php", true);
+    $view = parse_ini_file("view.ini", true);
 }
 else {
     header('Location: install.php');
     
 }
+
 //print_r($_SESSION);
 require_once("common/connector/data_connector.php"); //!connector
 
@@ -29,7 +30,6 @@ mysql_select_db($database);
 mysql_query('SET NAMES utf8');
 mysql_query('SET SET CHARACTER SET utf8');
 
-//echo 'mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', '' . $user . '', '' . $password . '';
 try {
     $db = new PDO('mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', '' . $user . '', '' . $password . '');
 } catch(PDOException $e) {
@@ -37,7 +37,36 @@ try {
     die();    
 }
 
+getSettings();  // include settings table to $config//
 
+//routing module index.php?m=???  ==> <functions/???.php>
+$module = isset($_GET['m']) ? $_GET['m'] : '';
+switch ($module) {
+    case 'login':
+        if (!isUserlogin()) {
+            include_once 'functions/' . $module . '.php';
+            exit;
+        }
+        break;
+    case 'logout':
+        if (isUserlogin()) {
+            include_once 'functions/' . $module . '.php';  //remote server provide ajax json
+            header('Location: index.php?');
+        }
+        break;
+    case 'database': //list database for login selection
+        include_once 'functions/' . $module . '.php';  //remote server provide ajax json
+        exit;
+        break;
+    default:
+        if (!empty($module) && isUserlogin()) {  // if user login, do /functions/module.php
+            include_once 'functions/' . $module . '.php';  //remote server provide ajax json
+            exit;
+        }
+}
+//end routing
+
+//Common functions
 function getSettings() {
     global $db, $config;
 
@@ -56,6 +85,7 @@ function getSettings() {
         }
     }
 }
+
 function isUserlogin() {
     return (isset($_SESSION['uid'])) ? TRUE:FALSE;
 }
@@ -98,11 +128,9 @@ function getDocumentName($id) {
 function getLastId($table) {
     global $db;
 
-//    $lid = $db->prepare("SELECT MAX(id) FROM " . $table);
     $lid = $db->prepare("SELECT id FROM " . $table." ORDER BY id DESC LIMIT 0,1");
     $lid->execute();
     $lastid = $lid->fetchColumn();
-//    echo $lastid;
 
     return $lastid;
 }
@@ -118,7 +146,6 @@ function getDocumentPath($id) {
     list($y,$m,$d) = split('-',$date);
     list($_,$site) = split('_',$_SESSION['database']);   // get path from name of database
     $filename = "./sites/".$site."/documents/".$y.$m."/".$id.".*";  // file all
-//    echo $filename;
     foreach(glob($filename) as $file) {
         if (file_exists($file)) {
             return $file;
@@ -226,7 +253,7 @@ function getParentTree($folder_id, $db) {
         getParentTree($rows['parent_id'], $db);
     }
     else {
-        $folderpaths[] = '>>'.$rows['text'];        
+        $folderpaths[] = ''.$rows['text'];        
     }
 }
 

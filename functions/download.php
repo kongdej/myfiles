@@ -12,14 +12,39 @@ if (file_exists($file)) {
     $ext = explode('.',$file); 
     $name = getDocumentName($id);
     $filename = $name.'.'.$ext[count($ext)-1];
+
+    $filename = str_replace('/', '_', $filename);
+    $filename = str_replace('"', '_', $filename);
+    $filename = str_replace('\\', '_', $filename);
+    $filename = str_replace(':', '_', $filename);
+    $filename = str_replace('*', '_', $filename);
+    $filename = str_replace('>', '_', $filename);
+    $filename = str_replace('<', '_', $filename);
+    $filename = str_replace('?', '_', $filename);
+    $filename = str_replace('|', '_', $filename);
     
     if ($filetype == 'application/pdf') {
-        header("Content-Disposition: attachment; filename=" . basename($filename));    
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream;charset=utf-8');
+        header('Content-Disposition: attachment; filename='.basename($filename));
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($file));
+        @ob_end_clean();
+        readfile($file);
+    exit();      
+        
+        
+        
+/*        
+//        header("Content-Description: File Transfer");             
+//        header("Content-Type: application/octet-stream;charset=utf-8");
+//        header("Content-Disposition: attachment; filename=" . basename($filename));    
         header("Content-Type: application/force-download");
-        header("Content-Type: application/octet-stream");
         header("Content-Type: ".$filetype );
-        header("Content-Description: File Transfer");             
-        header("Content-Length: " . filesize($file));
+//      header("Content-Length: " . filesize($file));
         flush(); // this doesn't really matter.
 
         $fp = fopen($file, "r"); 
@@ -29,6 +54,9 @@ if (file_exists($file)) {
             flush(); // this is essential for large downloads
         }  
         fclose($fp); 
+ * 
+ * 
+ */
     }
     else {
         header('Location: '.$file);

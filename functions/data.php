@@ -63,35 +63,23 @@ $data->filter("folder_id not in (select folder_id from folder_user_perm p  group
 header('Content-Type: text/html; charset=utf-8');
 $data->dynamic_loading(50);
 
-//$data->render_table("documents", "id", "name,refno,revise_date");
-$data->render_table("contents", "id", "name,folder_id");
-//$data->render_table("contents","id");
+// build folder format
+function formatting($row){
+    global $db;
+    global $folderpaths;
+    
+    $folder_id =$row->get_value("folder_id"); 
+    $folderpaths = array();
+    getParentTree($folder_id, $db);
+    $folderpaths = array_reverse($folderpaths);
+    $folderpath_str = join(' > ', $folderpaths);
 
-//$data->debugDumpParams();
-
-//$data->render_sql("select * from contents c,folder f","c.id","c.id,c.name,c.folder_id","");
-
-//$data->debugDumpParams();
-
-//{ "data":[{"id":"51","name":"Visualizer ","refno":"1F.2","revise_date":"2015-04-01"}, "pos":0, "total_count":44}
-/*
-$uid = $_SESSION['uid'];
-$folder_id = $_GET['folder_id'];
-
-//list all permission folder only status_id is 1
-$sql = "SELECT id,name,refno,revise_date FROM documents ";
-$s=$db->prepare($sql);
-$s->execute();
-$count = $s->rowCount();
-$data = $s->fetchAll();
-$lists=array();
-foreach($data as $row) {
-        $row['name'] .= '-';
-        //echo '>'.$row['refno'];
-        //if ($row['refno'] != '') $row['refno']= '?';
-        $lists[]=$row;  // send folder_id to hide (logic.js)
+    $row->set_value("path",$folderpath_str);
 }
-//print_r($folders);
-$json=json_encode($lists);
-echo '{ "data":'.$json.',"pos":0, "total_count":'.$count.'}';
-*/
+ 
+$data->mix("path", "");
+$data->event->attach("beforeRender","formatting");
+
+//$data->render_table("documents", "id", "name,refno,revise_date");
+$data->render_table("contents", "id", "name,refno,revise_date,folder_id");
+

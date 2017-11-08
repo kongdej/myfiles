@@ -1,4 +1,5 @@
 <?php
+// maybe delete
 $id = $_GET['id'];
 $folder_id = getFolderId($id);
 

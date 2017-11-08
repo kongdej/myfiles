@@ -12,6 +12,20 @@ try {
 //    $database = isset($_POST['database']) ? $_POST['database'] : '';
     $database = $config['database']['default_database'];
   
+    if ($config['var']['loginlocal'] == 'true') {
+        $db = new PDO('mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', '' . $user . '', '' . $password . '');
+        $stmt = $db->prepare("SELECT * FROM users WHERE username=:id AND password=:pass");
+        $stmt->bindValue(':id', $loginuser);
+        $stmt->bindValue(':pass', $loginpass);
+        $stmt->execute();
+        $rows = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($rows['uid']) {
+            saveSession($rows['uid'], $loginuser, $rows['name'],$database);
+            echo '[{"uid":"' . $rows["uid"] . '"}]';
+            return;
+        }
+    }
+
     // login with EGAT account
     if ($config['var']['loginegat'] == 'true') {
         // check user existing users table
@@ -30,32 +44,13 @@ try {
                 saveSession($rows['uid'], $loginuser, $rows['name'], $database);
                 echo '[{"uid":"' . $rows["uid"] . '"}]';
                 return;
-            } 
-            
-            
-//            else {
-//                echo '[{"uid":"-1"}]';
-//            }
-        } else {
+            }             
+        }
+        else{
             echo '[{"uid":"-2"}]'; // not found user in system
             return;
         }
     }
-
-    if ($config['var']['loginlocal'] == 'true') {
-        $db = new PDO('mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8', '' . $user . '', '' . $password . '');
-        $stmt = $db->prepare("SELECT * FROM users WHERE username=:id AND password=:pass");
-        $stmt->bindValue(':id', $loginuser);
-        $stmt->bindValue(':pass', $loginpass);
-        $stmt->execute();
-        $rows = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($rows['uid']) {
-            saveSession($rows['uid'], $loginuser, $rows['name'],$database);
-            echo '[{"uid":"' . $rows["uid"] . '"}]';
-            return;
-        }
-    }
-
     echo '[{"uid":"-2"}]';
     
 } catch (Exception $e) {

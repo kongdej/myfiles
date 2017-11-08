@@ -1,5 +1,4 @@
 /* Logic Section */
-
 // == 
 // submit data to database
 function uploadFiles(action) {
@@ -36,9 +35,6 @@ function uploadFiles(action) {
                 $$("edit_form").getValues(), 
                 function (text) {  
                     $$('editdocpopup').hide();
-//                    $$("listdoc").clearAll(); //refress folder
-//                    $$("listdoc").load("index.php?m=data&folder_id=" + folder_id);
-//                    $$("listdoc").refresh();
             });
             if (!$$('editfiles').isUploaded()) {
                 $$("editfiles").define("upload", "index.php?m=upload&action=changefile&id="+id);
@@ -82,6 +78,7 @@ function fullscreen() {
         $$('download_button').hide();
         $$('properties_button').hide();
         $$('mail_button').hide();
+        $$('group_mail_button').hide();        
         $$('fullscreen_button').define("align","center");
         $$('fullscreen_button').define("icon","close");
         $$('fullscreen_button').define("label","Close");
@@ -101,6 +98,7 @@ function fullscreen() {
         $$('download_button').show();
         $$('properties_button').show();
         $$('mail_button').show();
+        $$('group_mail_button').show();
         $$('fullscreen_button').define("label","Full Screen");
         $$('fullscreen_button').refresh();        
         toggle = 0;
@@ -134,7 +132,7 @@ function loadProperties(obj) {
         var d = JSON.parse(text);
 //        console.log(d);
         obj.setValues({
-            id: doccode+d.data[0].id,
+            id: config.site_name+'-'+d.data[0].id,
             name: d.data[0].name,
             revise_date: d.data[0].revise_date,
             created: d.data[0].created,
@@ -150,6 +148,22 @@ function loadProperties(obj) {
             type: "json"
         });
     });
+}
+
+function loadProfile(obj) {
+    webix.ajax("index.php?m=profile&username=" + session.username, function (text) {
+        var d = JSON.parse(text);
+        console.log(d[0]);
+        
+        obj.setValues({
+            id: d[0].id,
+            username: d[0].username,
+            name: d[0].name,
+            password: d[0].password,
+            email: d[0].email,
+            position: d[0].position
+        });
+    });    
 }
 
 function loadFolderProperties(obj) {
@@ -284,6 +298,7 @@ function deletedata() {
                 $$("fullscreen_button").disable();
                 $$("download_button").disable();
                 $$("mail_button").disable();
+                $$("group_mail_button").disable();
                 $$("properties_button").disable();
                 $$("delete_button").disable();
                 $$("edit_button").disable();
@@ -300,6 +315,31 @@ function deletedata() {
             type: "alert-error"
         });
     }
+}
+
+function showProfile() {
+    webix.ui({
+        id: "profilepopup",
+        view: "window",
+        position: "center",
+        modal: true,
+        scroll: false,
+        move: true,
+        borderless: true,
+        width: 600,
+        head: {
+            view: "toolbar", margin: -4, cols: [
+                {view: "label", label: "User Profile"},
+                {view: "icon", icon: "times-circle",
+                    click: "$$('profilepopup').hide();"}
+            ]
+        },
+        body: webix.copy(profilesheet)
+    });
+    $$('profilepopup').attachEvent("onShow", function (data, prevent) {
+        loadProfile($$('profile_data'));
+    });
+    $$('profilepopup').show();
 }
 
 function showProperties() {
@@ -359,6 +399,86 @@ function mail() {
 //        console.log('here');
     });
     $$('mailpopup').show();    
+}
+
+function mailGroup() {
+    webix.ui({
+        id: "groupmailpopup",
+        view: "window",
+        position: "center",
+        modal: true,
+        scroll: false,
+        move: true,
+        borderless: true,
+        width: 600,
+        head: {
+            view: "toolbar", margin: -4, cols: [
+                {view: "label", label: "Notify Document"},
+                {view: "icon", icon: "times-circle", click: "$$('groupmailpopup').hide();"}
+            ]
+        },
+        body: webix.copy(groupmailform)
+    });
+    $$('groupmailpopup').show();
+//    console.log($$('groupmailform').getValues());
+//    $$('listgroup').setValue($$('listgroup').getValue());
+}
+
+function addmember() {
+    var form = $$('editmemberform').getValues();
+//        console.log(form.member);
+    var contacts = form.member.split('<');
+    name = contacts[0];
+    email= contacts[1].substring(0, contacts[1].length - 1);
+    $$('editmemberform').setValues({
+        name:form.name,
+        member:''
+    });
+    $$('membertable').add({
+        name: name,
+        email: email
+    }); 
+}
+
+function delmember() {
+    var id = $$('membertable').getSelectedId();
+    if (id) {
+        $$('membertable').remove(id);
+    }
+    else {
+        webix.alert({type:"error",text:"Please select any user!"});
+    } 
+}
+
+function savemember(id) {
+    var form = $$('editmemberform').getValues();
+    if (form.name == '') {
+       webix.alert({type:"error",text:"Please enter group name."}); 
+    }
+    else {
+        var dtable = $$('membertable');
+        var emails = [];
+        dtable.eachRow( 
+            function (row){ 
+                //console.log( dtable.getItem(row).email );
+                emails.push(dtable.getItem(row).email);
+            }
+        )
+        var email = emails.join(',');
+        if (id) {
+            webix.ajax("index.php?m=member&id="+id+"&name="+form.name+"&email="+email, function(text,res){
+                $$('newMemberpopup').hide();
+                $$('grouptable').load('index.php?m=group');
+            });            
+        }
+        else {
+            webix.ajax("index.php?m=member&name="+form.name+"&email="+email, function(text,res){
+                $$('newMemberpopup').hide();
+                $$('grouptable').load('index.php?m=group');
+            });
+        }
+        //console.log(email);    
+    }
 }
 
 function sendMail() {
@@ -449,6 +569,28 @@ function sendMail() {
             }
         }
     );
+}
+
+function sendGroupMail() {
+    var id = $$("listdoc").getSelectedId().id;
+    var values = $$("groupmailform").getValues();
+    console.log(values); 
+    webix.ajax().post(
+        "index.php?m=mailgroup&id=" + id,
+        values,
+        function (text) {  //responce
+            var d = JSON.parse(text);
+            console.log(d);
+            if (d.status == 'ok') {
+                webix.message(d.sname);
+                $$('groupmailpopup').hide();
+            }
+            if (d.status == 'err') { 
+                webix.message({type: "error", text: d.sname});                
+            }
+        }
+    );
+    
 }
 
 function settingSubmit() {
@@ -645,7 +787,6 @@ function editUser() {
         move: true,
         borderless: false,
         width: 900,
-        //head: "User Management",
         head: {
             view: "toolbar", margin: -4, cols: [
                 {view: "label", align: "center", label: "User Management"},
@@ -661,21 +802,81 @@ function editUser() {
     $$('edituserpopup').show();
 }
 
-//=================
+
+function newMember(action) {
+    
+        webix.ui({
+            id: "newMemberpopup",
+            view: "window",
+            position: "center",
+            modal: true,
+            scroll: false,
+            move: true,
+            borderless: false,
+            width: 900,
+            head: {
+                view: "toolbar", margin: -4, cols: [
+                    {view: "label", align: "center", label: "Group"},
+                    {view: "icon", icon: "times-circle",
+                        click: "$$('newMemberpopup').close();"}
+                ]
+            },
+            body: webix.copy(editmemberform)
+        });
+    if (action == 'edit') {
+        var id = $$('grouptable').getSelectedId();
+        webix.ajax("index.php?m=memberedit&id="+id , function (text) {
+            var res = JSON.parse(text);
+            console.log(res.name);
+            $$('editmemberform').setValues({
+                name:res.name
+            });
+            for(var i=0; i < res.data.length; i++) {
+                var contact = JSON.parse(res.data[i]);
+                $$('membertable').add({
+                    name: contact.name,
+                    email: contact.email
+                }); 
+            }
+            $$('membertable').refresh();  
+        });
+    }
+    $$('newMemberpopup').show();
+}
+
+function editGroup() {
+    webix.ui({
+        id: "editgrouppopup",
+        view: "window",
+        position: "center",
+        modal: true,
+        scroll: false,
+        move: true,
+        borderless: false,
+        width: 900,
+        head: {
+            view: "toolbar", margin: -4, cols: [
+                {view: "label", align: "center", label: "Group Management"},
+                {view: "icon", icon: "times-circle",
+                    click: "$$('editgrouppopup').close();"}
+            ]
+        },
+        body: webix.copy(editgroupform)
+    });
+    $$('editgrouppopup').show();
+}
+
+//============================================================================
 /* main function */
 var userlevel = '';
 var logic = {
     /* init */
     init: function (user) {
-        //    webix.message(navigator.userAgent);
-//        if (/iPhone|iPod|iPad|Andriod/.test(navigator.userAgent)) {
-        if(navigator.userAgent.toLocaleLowerCase().indexOf("ipad"))
+//      check mobile device
         if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
             $$("folder_main").hide();
             $$('content_main').hide();
-            webix.message(navigator.userAgent);
         }
-        // users access control
         userlevel = user;
         switch (user) {
             case 'admin':
@@ -690,23 +891,29 @@ var logic = {
                 $$("btnSetting").show();
                 $$("btnLogging").show();
                 $$("listdoc").showColumn("infodoc");
-                break;
+                if (!view.adminview.id) $$('listdoc').hideColumn("id");
+                if (!view.adminview.name) $$('listdoc').hideColumn("name");
+                if (!view.adminview.refno) $$('listdoc').hideColumn("refno");
+                if (!view.adminview.path) $$('listdoc').hideColumn("path");
+                if (!view.adminview.revise_date) $$('listdoc').hideColumn("revise_date");
+            break;
             case 'docadmin' :
                 $$('toolbar_folder').hide();
                 $$("btnUser").hide();
                 $$("content_main").collapse();
                 $$("folder_main").expand();
                 $$("btnDocadminadd").show();
-                $$("listdoc").showColumn("infodoc");
-                
+                $$("listdoc").showColumn("infodoc");                
+                if (!view.docadminview.id) $$('listdoc').hideColumn("id");
+                if (!view.docadminview.name) $$('listdoc').hideColumn("name");
+                if (!view.docadminview.refno) $$('listdoc').hideColumn("refno");
+                if (!view.docadminview.path) $$('listdoc').hideColumn("path");
+                if (!view.docadminview.revise_date) $$('listdoc').hideColumn("revise_date");
                 break;
             default:
                 $$('toolbar_folder').hide();
                 $$('btnDocadminadd').hide();
                 $$("btnUser").hide();
-//                $$("btnSetting").hide();
-//                $$('grid_main').define("width", "500");
-//                $$("folder_main").collapse();
                 $$("folder_main").expand();
                 $$("grid_main").expand();
                 $$("content_main").collapse();
@@ -716,9 +923,15 @@ var logic = {
                 $$('folder_main').refresh();
                 $$('grid_main').refresh();
                 $$('content_main').refresh();
-                
+                if (!view.userview.id) $$('listdoc').hideColumn("id");
+                if (!view.userview.name) $$('listdoc').hideColumn("name");
+                if (!view.userview.refno) $$('listdoc').hideColumn("refno");
+                if (!view.userview.path) $$('listdoc').hideColumn("path");
+                if (!view.userview.revise_date) $$('listdoc').hideColumn("revise_date");
+
         }
-        // click on menu to popup windows
+        
+        // popup windows
         // order by
         webix.ui({
             view: "popup",
@@ -741,11 +954,41 @@ var logic = {
             body: webix.copy(advsearchform)
         });
 
-
+        webix.ui( {
+                view: "submenu",
+                id: "profilePopup",
+                width: 200,
+                padding:0,
+                data: [
+                        {id: 1, icon: "user", value: "My Profile"},
+                        {id: 2, icon: "users", value: "My Group"},
+                        { $template:"Separator" },
+                        {id: 4, icon: "sign-out", value: "Logout", click: "logout()"}
+                ],
+                on:{
+                        onMenuItemClick:function(id){
+                           // webix.message("Click: "+this.getMenuItem(id).value);
+                            if (this.getMenuItem(id).id === 1) {
+                                showProfile();
+                            }
+                            else if (this.getMenuItem(id).id === 2) {
+                                editGroup();
+                            }
+                            else if (this.getMenuItem(id).id === 4) {
+                                logout();
+                            }
+                        }
+                },
+                type:{
+                        template: function(obj){
+                                if(obj.type)
+                                        return "<div class='separator'></div>";
+                                return "<span class='webix_icon alerts fa-"+obj.icon+"'></span><span>"+obj.value+"</span>";
+                        }
+                }
+        });
 
         // Events Attached ===     
-        //
-        //
         // click document list then show content
         $$("listdoc").attachEvent("onAfterSelect", function (data, prevent) {
             var title = this.getItem(data.id).name;
@@ -778,7 +1021,13 @@ var logic = {
                 $$("download_button").enable();
                 $$("mail_button").show();                
                 $$("mail_button").enable();
+                $$("group_mail_button").show();                
+                $$("group_mail_button").enable();
                 $$("fullscreen_button").enable();
+                $$('listdoc').hideColumn("path");
+                $$('listdoc').hideColumn("refno");
+                $$('listdoc').hideColumn("revise_date");
+
                 if (user == 'docadmin' || user == 'admin') {
                     $$("delete_button").show();
                     $$("delete_button").enable();
@@ -795,13 +1044,9 @@ var logic = {
             $$("listdoc").load("index.php?m=data&folder_id=" + id);
             $$("listdoc").refresh();
             $$("grid_main").define("header", "<span class='webix_icon fa-angle-double-right'></span>"+$$("folder").getSelectedItem().text);
-//            console.log( $$("folder").getSelectedItem());
         });
        
-//        $$("folder").attachEvent("onItemClick", function (data, prevent) {
-//            console.log('folder click');
-//        });
-        
+      
         //  click search button to search 
         $$("search_button").attachEvent("onItemClick", function () {
             normalSearch();
@@ -825,22 +1070,14 @@ var logic = {
 
         // Folder Management 
         $$('folder').attachEvent("onAfterEditStop", function (data, obj) {
-//            console.log(obj.id);
             var folder_id = obj.id;
             webix.ajax("index.php?m=folder&action=edit&folder_id=" + folder_id + "&data=" + data.value);
         });
 
         $$('folder').attachEvent("onAfterDrop", function (id, native_event) {
-//            console.log(id);
-//            console.log(native_event);           
-//            console.log('id='+id.start);
-//            console.log('parent='+id.parent);
-//            console.log('index='+id.index);
             webix.ajax("index.php?m=folder&action=move&folder_id=" + id.start + "&parent_id=" + id.parent + "&index="+id.index);
             $$("folder").refresh();
         });
-        
-        //=================
     }
 };
-//!=== END main ===
+//!=== END main ===============================================================

@@ -1,6 +1,4 @@
 /* == Login Form== */
-
-//console.log(firstdb);
 var loginform = {
     view: "form",
     id: "log_form",
@@ -46,13 +44,10 @@ var loginform = {
             }
         }
     }
-
 };
 // == login form
 
-
 /*== Layout section ==*/
-
 // header
 var header = {
     id: "head_main",
@@ -60,17 +55,23 @@ var header = {
         view: "toolbar",
         paddingY: 12,
         elements: [
-            {view: "button", type: "icon", icon: "file-text-o", tooltip: title, css: "bt_1", label: org, click: "location.reload()", width: 240},
-//            {},
+            {view: "button", type: "icon", icon: "file-text-o", tooltip: config.title, css: "bt_1", label: org, click: "location.reload()", width: 330},
             {view: "search", id: "search", placeholder: "Search..", width: 250},
             {view: "button", id: "search_button", css: 'bt_1', label: "Search", tooltip: "Click to Search", width: 60},
-//            {view: "button", type: "htmlbutton", id: "sort", label: "Sort<span class='webix_icon fa-angle-down'></span>", tooltip: "Sort by", width: 80, popup: "sortpopup"},
             {view: "button", type: "htmlbutton", id: "advsearch", label: "More <span class='webix_icon fa-angle-down'></span>", tooltip: "Advanced search", width: 70, popup: "advsearchpopup"},
             {view: "icon", id: "btnDocadminadd", icon: "plus-circle", tooltip: "Add document", click: "uploadDocuments()", hidden:true},
             {view: "icon", id: "btnUser", icon: "user-plus", tooltip: "User Management", click: "editUser()", hidden:true},
             {view: "icon", id: "btnSetting", icon: "cog", tooltip: "System Settings", click: "setting()", hidden:true},
             {view: "icon", id: "btnLogging", icon: "clock-o", tooltip: "Logging", click: "logging()", hidden:true},
-            {view: "icon", icon: "power-off", tooltip: "Logout", click: "logout()"}
+            {},
+            {view: "button", id: "person_template", borderless:true, width: 180,
+                template: function(obj){
+                    var html = 	"<div onclick='webix.$$(\"profilePopup\").show(this)'>";
+                        html += "<span class='webix_icon fa-user'></span>"+session.name;
+                        html += " <span class='webix_icon fa-angle-down'></span></div>";
+                    return html;
+                }
+            }
         ]}
 };
 
@@ -79,7 +80,7 @@ var footer = {
     id: "foot_main",
     height: 25,
     css: {"background-color": "#F1F2F3", "text-align": "left", "font-size": "12px;"},
-    template: "&copy  " + copyright + " -- Login: " + username};
+    template: "&copy  " + config.copyright + " -- Login: " + session.username};
 
 // tree folder
 webix.protoUI({
@@ -99,28 +100,18 @@ var folder = {
                 view: "edittree",
                 id: 'folder',
                 select: true,
-//                drag: true,
-//                editable: true,
                 editor: "text",
                 editValue: "text",
                 editaction: "dblclick",
                 css: "sMode",
                 template: "{common.icon()}{common.folder()}&nbsp;#text#",
                 url: "index.php?m=folder",
-//                width:500,
                 on : {
-//                    onAfterSelect: function () {
-//                        if (userlevel == 'user') {
-//                            $$('folder_main').collapse();
-//                            $$('grid_main').expand();
-//                        }
-//                    },
                     onAfterLoad: function() {
                        $$("folder").open(1);    
                     }
                 }
-            }
-            ,
+            },
             {
                 view: "toolbar",
                 id: "toolbar_folder",
@@ -134,35 +125,13 @@ var folder = {
             },
         ]
     }
-/*    
-    on : {
-       
-        onItemClick: function (id,e,node) {
-            $$("grid_main").collapse();
-        }
-    }
- */   
 };
 
-function showDetails(id) {
-    webix.ajax("index.php?m=details&id=" + id, function (text) {
-        var d = JSON.parse(text);
-        webix.alert({
-            width:500,
-            type:"warning",
-            align:'left',
-            text:d.res
-        });
-    });
-}
-
-// list grid document of selected folder
+// grid document 
 var grid = {
     id: 'grid_main',
     header: "Documents",
     gravity: 3,
-//    template:"left",
-//    resizeColumn:true,
     body: {
         rows: [{
                 id: "listdoc",
@@ -174,7 +143,6 @@ var grid = {
                 resizeColumn: true,
                 autoconfig: true,
                 columns: [
-                    {id:"infodoc", header:"Info", width:25, template:"<span class='webix_icon fa-info' onmouseover='showDetails(\"#id#\");'></span>", hidden:true},
                     {id: "id", header: "id", 
                         format:function(value){ 
                             var pad = "00000";
@@ -182,7 +150,10 @@ var grid = {
                             return rtnvalue; 
                         }
                         ,adjust: "data"},                    
-                    {id:"name", header: "Title", fillspace:true, template: "#name#"},
+                    {id:"name", header: "Title", fillspace:2, template: "#name#"},
+                    {id:"refno", header: "Title", template: "#refno#"},
+                    {id:"path", header: "Folder", fillspace:1, template: "#path#"},
+                    {id:"revise_date", header: "Title", template: "#revise_date#"}
                 ],
                 url: "index.php?m=data",
                 pager: "pager",
@@ -196,9 +167,7 @@ var grid = {
                             // webix.alert("Document not found!");
                         }
                         $$("grid_main").define("header", '<span class=\'webix_icon fa-clock-o\'></span>Documents (' + numberWithCommas(this.count()) + ')');
-//                        $$("grid_main").define("header", 'Recent');
                         $$("grid_main").refresh();
-                        //console.log('hi');
                     }}
             },
             {
@@ -216,27 +185,20 @@ var grid = {
     },
     
     on : {
-       
         onItemClick: function (id,e,node) {
             if (userlevel == 'user') {
                $$("folder_main").collapse();
             }
-//            console.log(id);
-//            console.log(e);
-//            console.log(node);
-            
         }
-    }
-    
+    }    
 };
 
-// show content and footer menu
+// show content and menu
 var content = {
     id: "content_main",
     header: "Content",
     gravity: 5,
     template:"right", 
-   //hidden: true,
     collapsed: false,
     body: {
         rows: [{
@@ -253,18 +215,13 @@ var content = {
                     {id: "delete_button", width: 70, view: "button", type:'icon', icon: 'trash', label: "Delete", click: "deletedata()", disabled: true, hidden:true},
                     {id: "properties_button", width: 100, view: "button", type:'icon', icon: 'info', label: "Properties", click: "showProperties()", disabled: true, hidden:false},
                     {id: "download_button", width: 100, view: "button", type:'icon', icon: 'download', label: "Download", click: "download()", disabled: true, hidden:false},
-                    {id: "mail_button", width: 60, view: "button", type:'icon', icon: 'envelope-o', label: "Mail", click: "mail()", disabled: true, hidden:false},
+                    {id: "mail_button", width: 65, view: "button", type:'icon', icon: 'envelope-o', label: "Mail", click: "mail()", disabled: true, hidden:false},
+                    {id: "group_mail_button", width: 75, view: "button", type:'icon', icon: 'comment-o', label: "Notice", click: "mailGroup()", disabled: true, hidden:false},
                     {id: "fullscreen_button", width: 100, view: "button", type:'icon', icon: 'expand', label: "Full Screen", click: "fullscreen();", disabled: true, hidden:false},
-
-//                    {},
-//                    {id: "back_button", view: "button", type: "prev", click: ("moveBack();"), label: "Back", width: 50, disabled: true , hidden:false},
-//                    {id: "next_button", view: "button", type: "next", click: ("moveNext();"), label: "Next", width: 50, disabled: true , hidden:false}
-
                 ]
             }
         ]
     }};
-
 // == End Layout Section ====
 
 /* Pop Up window */
@@ -298,7 +255,6 @@ var advsearchform = {
                         if (form.validate()) {
                             var data = JSON.stringify($$("adv_form").getValues());
                             $$("listdoc").clearAll();
-                            //$$("listdoc").load("data/data.php?advs=" + data + "&db=" + webix.storage.session.get('user').database);
                             $$("listdoc").load("index.php?m=data&advs=" + data);
                             $$("listdoc").refresh();
                             $$("folder").unselect();
@@ -345,7 +301,6 @@ var sortform = {
             var folder = $$('folder').getSelectedId();
             var search = $$('search').getValue().toLowerCase();
             $$("listdoc").clearAll();
-//            $$("listdoc").load("data/data.php?srt=" + data + "&folder_id=" + folder + "&s=" + search + "&db=" + webix.storage.session.get('user').database);
             $$("listdoc").load("index.php?m=data&srt=" + data + "&folder_id=" + folder + "&s=" + search);
             $$("listdoc").refresh();
             $$("sortpopup").hide();
@@ -359,18 +314,6 @@ var uploadform = {
     id: "uform",
     width: 650,
     view: "form", type: "line", rows: [
-        {view: "text", name: 'name', label: "Title"},
-        {view: "richselect",
-            label: 'Folder *',
-            name: "folder_id",
-            options: {
-                body: {
-                    url: "index.php?m=selectfolder"
-                }
-            },
-            iconCss: "combo_icon",
-            iconWidth: 20
-        },
         {    
         cols:[{view: "label", label:'File',width:83},{
             view: "uploader",
@@ -388,18 +331,15 @@ var uploadform = {
             multiple: false,
             on : {
                 onUploadComplete: function(res) {
-                     //webix.message("done");
                      this.hide();
                 },
                 onFileUpload: function(res) {
                      webix.message("File upload.");                    
                 }
-                
             }
         },{}]
         },
         {cols:[{view: "label", label:'',width:82},{
-            
             borderless: true,
             view: "template", id: "mylist", type: "myUploader",
             autoheight: true, minHeight: 30,
@@ -409,14 +349,11 @@ var uploadform = {
                 var filename;
                 if (data.each) {
                     data.each(function(obj){
-//                        console.log(obj);
                         filedesc = obj.name + ' (' + obj.sizetext+')';
                         filedate = obj.file.lastModified;
                         filename = obj.name;
                     });
                 }
-//               console.log(filedate);
-//                console.log($$('uform').getValues().name);
                 if ($$('uform').getValues().name !='') {
                     filename = $$('uform').getValues().name; 
                 }
@@ -429,72 +366,23 @@ var uploadform = {
             
         }]
         },
+                {view: "text", name: 'name', label: "Title"},
+        {view: "richselect",
+            label: 'Folder *',
+            name: "folder_id",
+            options: {
+                body: {
+                    url: "index.php?m=selectfolder"
+                }
+            },
+            iconCss: "combo_icon",
+            iconWidth: 20
+        },
         {view: "datepicker", value: new Date(), format: webix.Date.dateToStr("%d/%m/%Y"), name: "revise_date", label: "Date", stringResult: true, width: 300},
         {view: "text", name: 'refno', label: "Ref No."},
         {view: "text", name: 'keyword', label: "Keyword"},
         {view: "textarea", name: 'description', label: "Description"},
-        {view: "label", label: ""},
-        /*
-        {    
-        cols:[{view: "label", label:'Attachment',width:83},{
-            view: "uploader",
-            id:   "uploadfilesattachment",
-            name: "uploadfilesattachment",
-            height: 37,
-            width:150,
-            align: "center",
-            type: "iconButton",
-            icon: "file-o",
-            label: "Click to select(s)",
-            autosend: false,
-            link: "mylistattachment",
-            upload: "index.php?m=upload",
-            multiple: true,
-            on : {
-                onUploadComplete: function(res) {
-                     webix.message("done");
-                     this.hide();
-                },
-                onFileUpload: function(res) {
-                     webix.message("file upload done");                    
-                }
-                
-            }
-        },{}]
-        },
-        
-        {cols:[{view: "label", label:'',width:82},{
-            
-            borderless: true,
-            view: "template", id: "mylistattachment", type: "myUploader",
-            autoheight: true, minHeight: 80,
-            template:function(data){
-                var filedesc='';
-                var filedate;
-                var filename;
-                if (data.each) {
-                    data.each(function(obj){
-                        console.log(obj);
-                        filedesc += obj.name + ',';
-//                        filedate = obj.file.lastModified;
-//                        filename = obj.name;
-                    });
-                }
-//               console.log(filedate);
-//                console.log($$('uform').getValues().name);
-//                if ($$('uform').getValues().name !='') {
-//                    filename = $$('uform').getValues().name; 
-//                }
-//                $$('uform').setValues({
-//                    name : filename,
-//                    revise_date: new Date(filedate)
-//                }, true);
-                return filedesc;
-            }
-            
-        }]
-        },
-        */
+        {height:15},
         {
             id: "uploadButtons",
             cols: [{},
@@ -503,9 +391,11 @@ var uploadform = {
                 {view: "button", label: "Cancel", type: "iconButton", icon: "close", click: "cancel('add')", align: "center"},
                 {}
             ]
-        }        
+        },        
+        {height:25}
     ]
 };
+
 // edit document form
 var editform = {
     id: 'edit_form',
@@ -539,13 +429,11 @@ var editform = {
             multiple: false,
             on : {
                 onUploadComplete: function(res) {
-//                     webix.message("done");
                      this.hide();
                 },
                 onFileUpload: function(res) {
                      webix.message("File upload.");                    
                 }
-                
             }
         },{}]
         },
@@ -556,7 +444,6 @@ var editform = {
                 if (data.each) {
                     var filedesc="..";
                     data.each(function(obj){
-//                        console.log(obj.name);
                         if (obj.name != undefined) {
                             filedesc=obj.name + ' (' + obj.sizetext+')';
                         }
@@ -566,36 +453,12 @@ var editform = {
             }    
         }]
         },
-        {cols:[{view: "label", label:'',width:82},{view: "label", name: 'filename', label: " ", disabled: true}]},
-        
+        {cols:[{view: "label", label:'',width:82},{view: "label", name: 'filename', label: " ", disabled: true}]},        
         {view: "text", name: 'refno', label: "Ref No."},
         {view: "datepicker", name: "revise_date", label: "Date", stringResult: true, width: 300},
         {view: "text", name: 'keyword', label: "Keyword"},
         {view: "textarea", name: 'description', label: "Description"},
         {view: "label",label:""},
-        /*
-        {
-            view: "uploader",
-            id: "editfiles",
-            name: "editfiles",
-            height: 37,
-            align: "center",
-            type: "iconButton",
-            icon: "plus-circle",
-            label: "Click to change a new file.",
-            autosend: false,
-            link: "mylist2",
-            upload: "index.php?m=upload&action=changefile",
-            multiple: false
-        },
-        {
-            borderless: false,
-            view: "list", id: "mylist2", type: "myUploader",
-            autoheight: true, minHeight: 50
-        },
- */  
-
-
         {
             id: "uploadButtons",
             cols: [{},
@@ -617,8 +480,6 @@ var griduser = {
         {id: "password", editor: "text", header: "Password", width: 100, sort: "string"},
         {id: "email", editor: "text", header: "Email", width: 150, sort: "string"},
         {id: "position", editor: "select", header: "User Level", sort: "string", options: ["User", "DocAdmin", "Admin"], width: 100},
-//        {id: "name", editor: "text", header: ["Name", {content: "textFilter"}], width: 400, sort: "string"},
-//        {id: "position", editor: "select", header: ["User Level", {content: "selectFilter"}], sort: "string", options: ["User", "DocAdmin", "Admin"], width: 110},
     ],
     height: 450,
     autowidth: true,
@@ -628,37 +489,15 @@ var griduser = {
     save: "connector->index.php?m=user",
     url: "index.php?m=user",
     on :{
-/*        onBeforeEditStart : function (data,row){
-            
-         var dp = webix.dp.$$('usertable');
-
-            dp.attachEvent('onBeforeDataSend', function(obj){
-                console.log(obj.data.id);
-                var record = $$('usertable').getItem(obj.data.id);
-                console.log(record);
-                webix.ajax("index.php?m=finddupuser&username="+obj.data.username, function(text,res){
-                    console.log('..'+text);
-                    if (text) {
-                        console.log(record.username);
-                        webix.message({type:'error',text:'Duplicate username'});
-                    }
-                });                
-            });   
-        },
-*/        
         onBeforeEditStop : function (data,row){
             if (row.column == 'username' && data.value != data.old) {
-                // check duplicate user
-//                console.log('..check dup');
                 webix.ajax("index.php?m=finddupuser&username="+data.value, function(text,res){
-//                    console.log('..'+text);
                     if (text=='1') {
                         webix.message({type:'error',text:'Duplicate username'});
                         $$('usertable').load('index.php?m=user');
                         $$('usertable').refresh();
                     }
                     else {
-//                        console.log('..find egat userinfo');
                          webix.ajax("functions/findegatuser.php?id="+data.value, function(text,res){
                             if (text) {
                                 webix.message(res.json()[0].name);               
@@ -692,20 +531,12 @@ var buttons = {
                 $$('usertable').moveSelection("top");
                 $$('usertable').eachRow( function (row){ 
                     if ($$('usertable').getItem(row).username == '') {
-//                        console.log( $$('usertable').getItem(row).username ) 
                         $$('usertable').edit({
                             row:row,
                             column:'username'
-                });
+                        });
                     }
-                    
                 });
- /*
-                $$('usertable').edit({
-                    row:0,
-                    column:'name'
-                });
- */
                 webix.message( {
                     type : "error",
                     text: "Dbclick to edit user."
@@ -730,11 +561,108 @@ var buttons = {
         {}
     ]
 };
+
 // todo close window, add goto bottom
 var edituserform = {
     rows: [
         griduser,
         buttons
+    ]
+};
+
+var editmemberform = {
+    id: 'editmemberform',
+    view: "form",
+    rows: [
+        {view: "text", id:'name', name: 'name', label: "Group Name"},
+        {cols:[
+                {view: "text", name: 'member', label: "Members..", suggest: "index.php?m=mailaddress"},
+                {view: "button", label: "Add to Group", width:100,  click: "addmember()"}
+            ]
+        },     
+        {
+            view: "datatable",
+            id: "membertable",
+            columns: [
+                {id: "name", header: "Name", width:300, sort: "string"},
+                {id: "email", header: "Email", width:200, sort: "string"},                
+            ],
+            css:{"border":"1px solid gray"},
+            height:300,
+            width:550,
+            select:true,
+        },
+        {height:10},
+        {
+            view: "toolbar",
+            paddingY: 10,
+            margin:15, 
+            elements: [
+                {view: "button", width: 150, value: "Save and Close", click: function () {
+                        var id = $$('grouptable').getSelectedId();
+                        savemember(id);    
+                    }
+                },
+                {},
+                {view: "button", width: 150, value: "Remove from Group", click: 'delmember'}
+            ]
+        }
+    ]    
+};
+
+var editgroupform = {
+    rows: [
+        {
+            view: "datatable",
+            id: "grouptable",
+            columns: [
+                {id: "name", header: "Group Name", width:350, sort: "string"}
+            ],
+            height: 320,
+            autowidth: true,
+            select: "row",
+            url: "index.php?m=group",
+        },
+        {
+            view: "toolbar",
+            paddingY: 10,
+            margin:15, 
+            elements: [{},
+                {view: "button", width: 100, value: "New",  click: "newMember('new')"},
+                {view: "button", width: 100, value: "Edit", click: function(){
+                        var id = $$('grouptable').getSelectedId();
+                        if (id) {
+                           newMember('edit');
+                        }
+                        else {
+                           webix.alert({type:"error",text:"Please select any group to edit!"});
+                        }
+                        
+                }},
+                {view: "button", width: 100, value: "Delete", click: function () {
+                        var id = $$('grouptable').getSelectedId();
+                        if (id) {
+                            webix.confirm("Delete Group?", function (result) {
+                                if (result) {
+                                    webix.ajax("index.php?m=groupdel&id="+id , function (text) {
+                                        var res = JSON.parse(text);
+                                        console.log(res);
+                                        if (res.msg == '1') {
+                                            $$('grouptable').remove(id);
+                                            webix.message("Group has deleted successfully.");
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            webix.alert({type:"error",text:"Please select any group!"});
+                        }
+                    }
+                },
+                {}
+            ]
+        }
     ]
 };
 
@@ -756,7 +684,6 @@ var editfolderform = {
                     width:270,
                     select:true,
                     drag:true,
-//                    url: "index.php?m=user"
                     on: {
                         onAfterDrop: function (context,event) {
                              var folder_id = $$('folder').getSelectedId();
@@ -802,19 +729,8 @@ var editfolderform = {
             ]},
 
         {height:10}
-/*        
-        {
-            id: "editfolderButtons",
-            margin:15,
-            cols: [{},
-                {view: "button", label: "Submit", width:100,  click: "updateFolder();"},
-                {view: "button", label: "Cancel", width:100,  click: "cancel('editfolder')"},{}
-            ]
-        }
-*/        
     ],
-    
-    
+        
     rules: {
         "text": webix.rules.isNotEmpty
     },
@@ -834,7 +750,7 @@ var mailform = {
     view: "form",
     width: 680,
     rows: [
-        {view: "text", label: "To..", name: "to", labelWidth:60, suggest: "index.php?m=mailaddress"},
+        {view: "text", label: "To", name: "to", labelWidth:60, suggest: "index.php?m=mailaddress"},
         {view: "text", label: "Cc..", name: "cc", labelWidth:60, suggest: "index.php?m=mailaddress"},
         {view: "text", label: "Subject:", name: "subject", labelWidth:60},
 	{view:"ckeditor", name:"message", height:300,value:''},
@@ -844,6 +760,32 @@ var mailform = {
                 {},
                 {view: "button", label: "Send", width:100,  click: "sendMail()"},
                 {view: "button", label: "Cancel", width:100,  click: "$$('mailpopup').hide();"},
+                {}
+        ]}
+    ]
+};
+
+var groupmailform = {
+    id: 'groupmailform',
+    view: "form",
+    width: 380,
+    rows: [
+        { 
+            id: 'listgroup',
+            view: "select",
+            label: 'To..',
+            name: "listgroup",
+            options: 'index.php?m=selectgroup',
+            iconCss: "combo_icon",
+            iconWidth: 20
+        },
+        {height:15},
+        {
+            margin:25,
+            cols:[
+                {},
+                {view: "button", label: "Send", width:100,  click: "sendGroupMail()"},
+                {view: "button", label: "Cancel", width:100,  click: "$$('groupmailpopup').hide();"},
                 {}
         ]}
     ]
@@ -895,13 +837,6 @@ var loggingform = {
                 },
                 onAfterLoad: function () {
                     this.hideOverlay();
-//                    if (!this.count()) {
-//                        // webix.alert("Document not found!");
-//                    }
-//                    $$("grid_main").define("header", '<span class=\'webix_icon fa-clock-o\'></span>Documents (' + numberWithCommas(this.count()) + ')');
-//                        $$("grid_main").define("header", 'Recent');
-//                    $$("grid_main").refresh();
-                    //console.log('hi');
                 }}
             },
             {
@@ -914,9 +849,7 @@ var loggingform = {
                 },
                 autosize: true,
                 group: 10
-            },
-        
-        
+            },        
         {
             margin:15,
             cols:[
@@ -950,7 +883,24 @@ var propertysheet = {
     ]
 };
 
-/*== Main layout ==*/
+// show docuemnt properties 
+var profilesheet = {
+    view: "property",
+    id: "profile_data",
+    width: 400,
+    height: 155,
+    editable: false,
+    elements: [
+        {label: "UID", id: "id", type: 'text'},
+        {label: "Username", id: "username", type: "text"},
+        {label: "Name", id: "name", type: "text"},
+        {label: "Password", id: "password", type: "text"},
+        {label: "Email", id: "email", type: "text"},        
+        {label: "Position", id: "position", type: "text"}
+    ]
+};
+
+/*== Main layout =====================================================*/
 var w = window.innerWidth;
 var ui_scheme = {
     type: "space", //list,space
@@ -975,4 +925,4 @@ var ui_scheme = {
         footer
    ]
 };
-/*== End Main layout ==*/
+/*== End Main layout ==================================================*/
