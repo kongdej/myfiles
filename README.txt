@@ -1,3 +1,5 @@
+https://github.com/kongdej/myfiles.git
+
 Prerequisite:
 	- PHP6  (not 7)
 	- Enable SOAP in php.ini
@@ -17,3 +19,4 @@ Setup Instruction:
 
 
 - Delete install.php after installation. 
+
